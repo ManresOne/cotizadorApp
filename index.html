@@ -96,7 +96,7 @@
         .boton-descargar { background: var(--blanco); color: var(--negro); padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; border: 2px solid var(--negro); transition: 0.3s; }
         .tarjeta-descarga:hover .boton-descargar { background: var(--negro); color: var(--blanco); }
 
-        /* SECCIÓN PRIVADA CON CONTRASEÑA */
+        /* ACCESO PRIVADO - SOLO APARECE CON #acceso-interno */
         .acceso-privado {
             display: none;
             background: var(--blanco);
@@ -105,9 +105,11 @@
             box-shadow: 8px 8px 0px var(--negro);
             padding: 30px;
             max-width: 500px;
-            margin: 0 auto;
+            margin: 40px auto 0;
             text-align: center;
         }
+        .seccion-descargas:target .acceso-privado { display: block; } /* Aparece solo si la URL es #acceso-interno */
+
         .acceso-privado input {
             width: 100%;
             padding: 12px;
@@ -132,6 +134,7 @@
 
         /* ÁREA INTERNA OCULTA */
         .area-interna-oculta { display: none; margin-top: 30px; }
+        .area-interna-oculta.visible { display: block; }
 
         /* GALERÍA CON CARRUSEL CSS PURO */
         .carrusel-trabajos { width: 100%; overflow: hidden; position: relative; padding: 10px 0; }
@@ -181,7 +184,7 @@
         .lightbox-siguiente { right: 20px; }
         .lightbox-contador { color: var(--blanco); margin-top: 20px; font-size: 1.2rem; font-weight: bold; }
 
-        /* SECCIÓN DE MARCAS (SOLO UNA LÍNEA) */
+        /* SECCIÓN DE MARCAS */
         .seccion-marcas { background: var(--gris-claro); padding: 60px 0; text-align: center; overflow: hidden; }
         .seccion-marcas p { font-size: 1.1rem; color: var(--gris-oscuro); margin-bottom: 40px; }
         
@@ -408,7 +411,7 @@
         </div>
     </section>
 
-    <!-- SECCIÓN DE DESCARGAS (SOLO PÚBLICA) -->
+    <!-- SECCIÓN DE DESCARGAS (CON ACCESO PRIVADO) -->
     <section id="descargas" class="seccion-descargas">
         <h2 class="seccion-titulo"><img src="img/descargas.png" alt="Icono Descargas"> DESCARGAS</h2>
         <p style="text-align: center; margin-bottom: 50px;">Consulta nuestros catálogos y descarga nuestro brochure.</p>
@@ -426,7 +429,7 @@
                 <a href="https://wa.me/p/9527643680651639/573113944320" target="_blank" class="boton-descargar">Ir al Catálogo</a>
             </div>
             
-            <!-- ÁREA PRIVADA CON CONTRASEÑA -->
+            <!-- SOLO APARECE SI ESCRIBES #acceso-interno EN LA URL -->
             <div id="acceso-privado" class="acceso-privado">
                 <h3>🔒 Acceso Interno</h3>
                 <p>Ingrese la contraseña para ver los archivos internos.</p>
@@ -436,7 +439,7 @@
             </div>
         </div>
 
-        <!-- ÁREA INTERNA OCULTA (SOLO APARECE SI LA CONTRASEÑA ES CORRECTA) -->
+        <!-- ÁREA INTERNA (SE MUESTRA AL PONER LA CONTRASEÑA) -->
         <div id="area-interna" class="area-interna-oculta">
             <h3 style="text-align: center; margin-bottom: 20px;">📂 Recursos Internos</h3>
             <div class="grid-descargas">
@@ -674,7 +677,7 @@
             
             if (clave === contrasenaCorrecta) {
                 document.getElementById('acceso-privado').style.display = 'none';
-                document.getElementById('area-interna').style.display = 'block';
+                document.getElementById('area-interna').classList.add('visible');
                 document.getElementById('mensajeError').style.display = 'none';
             } else {
                 document.getElementById('mensajeError').style.display = 'block';
