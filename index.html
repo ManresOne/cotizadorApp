@@ -315,6 +315,23 @@
   .maint-type-preventivo{background:var(--ui-soft);}
   .maint-type-correctivo{background:var(--danger);}
   .maint-type-predictivo{background:var(--ui-ink);}
+  .client-group{border:1px solid var(--ui-line);border-radius:16px;margin-bottom:10px;overflow:hidden;background:var(--panel);}
+  .client-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer;}
+  .client-head-name{margin:0;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:14px;color:var(--ink);}
+  .client-count{font-size:11px;color:var(--ink-soft);}
+  .client-group .chev{font-size:12px;color:var(--ink-soft);transition:transform .15s;flex-shrink:0;margin-left:8px;}
+  .client-group.open .chev{transform:rotate(180deg);}
+  .client-body{display:none;padding:0 12px 12px;}
+  .client-group.open .client-body{display:block;}
+  .client-body .maint-item{margin-bottom:8px;}
+  .client-body .maint-item:last-child{margin-bottom:0;}
+  .maint-spec-line{font-size:11.5px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;margin:2px 0;}
+  .maint-spec-secondary{opacity:0.85;}
+  .paste-preview-rows{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;}
+  .paste-preview-row{display:flex;gap:8px;align-items:center;}
+  .paste-preview-row .paste-name{flex:1;}
+  .paste-preview-row .paste-price{width:130px;}
+  .paste-preview-row .paste-remove{background:none;border:1px solid var(--line);border-radius:50%;width:26px;height:26px;cursor:pointer;color:var(--ink-soft);flex-shrink:0;}
   .maint-item{border:1px solid var(--line);border-radius:4px;padding:10px 12px;}
   .maint-item.maint-overdue{border-color:var(--danger);}
   .maint-item-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
@@ -326,43 +343,6 @@
   .maint-delete{background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;}
   .maint-reminder-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);}
   .maint-reminder-row .btn{font-size:11px;padding:5px 9px;}
-
-  /* Acordeón de mantenimientos agrupado por cliente */
-  .maint-accordion{display:flex;flex-direction:column;gap:10px;}
-  .maint-client-acc{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#FBFAF7;}
-  .maint-client-acc-header{display:flex;align-items:center;justify-content:space-between;width:100%;padding:11px 13px;background:var(--panel);border:none;border-bottom:1px solid transparent;cursor:pointer;font-family:'Baloo 2',sans-serif;font-weight:600;font-size:13px;color:var(--ink);text-align:left;gap:8px;}
-  .maint-client-acc-header:hover{background:#F3F1EA;}
-  .maint-client-acc.open .maint-client-acc-header{border-bottom-color:var(--line);}
-  .maint-client-acc-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .maint-client-acc-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-  .maint-client-acc-count{font-size:11px;color:var(--ink-soft);font-weight:500;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}
-  .maint-client-acc-chevron{font-size:11px;color:var(--brass);transition:transform .15s ease;display:inline-block;}
-  .maint-client-acc.open .maint-client-acc-chevron{transform:rotate(180deg);}
-  .maint-client-acc-body{display:none;flex-direction:column;gap:8px;padding:10px;}
-  .maint-client-acc.open .maint-client-acc-body{display:flex;}
-
-  .maint-record-card{border:1px solid var(--line);border-radius:6px;background:#fff;overflow:hidden;}
-  .maint-record-card.maint-overdue{border-color:var(--danger);}
-  .maint-record-summary{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:9px 11px;cursor:pointer;}
-  .maint-record-summary:hover{background:#F7F6F1;}
-  .maint-record-summary-left{display:flex;flex-direction:column;gap:3px;min-width:0;}
-  .maint-record-equipment{font-weight:600;font-size:12.5px;color:var(--ink);word-break:break-word;}
-  .maint-record-meta{font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-  .maint-record-meta .maint-next-tag{font-weight:600;}
-  .maint-record-card.maint-soon .maint-record-meta .maint-next-tag{color:var(--ink);}
-  .maint-record-card.maint-overdue .maint-record-meta .maint-next-tag{color:var(--danger);}
-  .maint-record-actions{display:flex;gap:4px;flex-shrink:0;}
-  .maint-record-actions button{background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--ink-soft);border-radius:4px;}
-  .maint-record-actions button:hover{background:var(--paper);}
-  .maint-record-chevron{font-size:10px;color:var(--ink-soft);margin-left:2px;transition:transform .15s ease;flex-shrink:0;align-self:center;}
-  .maint-record-card.open .maint-record-chevron{transform:rotate(180deg);}
-  .maint-record-details{display:none;padding:0 11px 11px;border-top:1px dashed var(--line);margin-top:2px;}
-  .maint-record-card.open .maint-record-details{display:block;}
-  .maint-specs-title{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.5px;margin:10px 0 4px;}
-  .maint-specs-table{width:100%;border-collapse:collapse;font-size:12px;}
-  .maint-specs-table td{padding:4px 4px;border-bottom:1px solid var(--line);vertical-align:top;}
-  .maint-specs-table td:first-child{color:var(--ink-soft);width:42%;padding-right:8px;}
-  .maint-specs-empty{font-size:11.5px;color:var(--ink-soft);font-style:italic;margin-top:8px;}
 
   @page{
     size: letter;
@@ -633,7 +613,8 @@
             <button id="saveCatalogBtn" class="btn btn-small btn-ghost" type="button">💾 Guardar en catálogo</button>
             <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
               <input id="importCatalogInput" type="file" accept=".xlsx,.xls,.csv" style="display:none;">
-              <button id="importCatalogBtn" class="btn btn-small btn-ghost" type="button">📤 Importar</button>
+              <button id="importCatalogBtn" class="btn btn-small btn-ghost" type="button">📤 Importar archivo</button>
+              <button id="pasteCatalogBtn" class="btn btn-small btn-ghost" type="button">📋 Pegar lista</button>
               <button id="exportCatalogBtn" class="btn btn-small btn-ghost" type="button">⬇ Exportar</button>
               <button id="deleteCatalogBtn" class="btn btn-small btn-text" type="button" style="display:none;">Eliminar del catálogo</button>
             </div>
@@ -739,11 +720,7 @@
           <option value="">Selecciona un cliente…</option>
         </select>
       </label>
-      <label>Equipo
-        <input id="maintEquipment" list="maintEquipmentList" placeholder="Ej: PC Recepción, Dell Optiplex 3080" autocomplete="off">
-        <datalist id="maintEquipmentList"></datalist>
-      </label>
-      <p class="field-hint" id="maintEquipmentHint" style="display:none;margin:-4px 0 0;">Escribe igual que la vez anterior para que se autocompleten las especificaciones del equipo.</p>
+      <label>Equipo<input id="maintEquipment" placeholder="Ej: PC Recepción, Dell Optiplex 3080"></label>
 
       <details class="settings-block" id="maintSpecsBlock" style="margin:4px 0;">
         <summary>Especificaciones técnicas del equipo (opcional)</summary>
@@ -867,6 +844,19 @@
     <div id="clientDetailView" style="display:none;"></div>
   </aside>
   <div class="history-overlay" id="clientsOverlay"></div>
+
+  <div class="dash-modal" id="pasteCatalogModal">
+    <div class="dash-header">
+      <h2>📋 Pegar lista de precios</h2>
+      <button id="closePasteCatalog" class="btn btn-ghost btn-small" type="button">Cerrar</button>
+    </div>
+    <p class="field-hint">Copia la tabla de productos desde la página del proveedor o desde el PDF (selecciónala y Ctrl+C), y pégala aquí abajo con Ctrl+V. Cada línea debe tener el nombre y el precio — no importa si vienen separados por tabulación, comas o varios espacios.</p>
+    <textarea id="pasteCatalogText" rows="14" style="width:100%;font-family:'IBM Plex Mono',monospace;font-size:12.5px;" placeholder="Cámara domo 2MP&#10;180000&#10;Cámara bullet 4MP    250000&#10;DVR 8 canales, 450000"></textarea>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
+      <button id="confirmPasteCatalogBtn" class="btn btn-primary btn-small" type="button">Revisar e importar</button>
+    </div>
+    <div id="pasteCatalogPreview" style="margin-top:20px;"></div>
+  </div>
 
   <div class="dash-modal" id="findingsModal">
     <div class="dash-header">
@@ -1747,6 +1737,116 @@ async function deleteBankAccount(){
   }catch(e){ console.error('No se pudo eliminar la cuenta bancaria', e); }
 }
 
+function parsePriceString(str){
+  if(!str) return 0;
+  let s = String(str).trim().replace(/[^\d.,]/g,'');
+  if(!s) return 0;
+  const sepCount = (s.match(/[.,]/g)||[]).length;
+  const decimalMatch = s.match(/[.,](\d{2})$/);
+  if(decimalMatch && sepCount === 1){
+    s = s.replace(/[.,](\d{2})$/, '.$1');
+  } else {
+    s = s.replace(/[.,]/g, '');
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : Math.round(n);
+}
+
+function parseCatalogPasteText(text){
+  const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  const results = [];
+  lines.forEach(line=>{
+    let name = '', priceStr = '';
+    if(line.includes('\t')){
+      const parts = line.split('\t').map(p=>p.trim()).filter(p=>p!=='');
+      if(parts.length >= 2){ priceStr = parts[parts.length-1]; name = parts.slice(0,-1).join(' '); }
+    }
+    if(!name){
+      const parts = line.split(/\s{2,}/).map(p=>p.trim()).filter(p=>p!=='');
+      if(parts.length >= 2){ priceStr = parts[parts.length-1]; name = parts.slice(0,-1).join(' '); }
+    }
+    if(!name){
+      const m = line.match(/^(.*?)[,;\s]+\$?\s*([\d][\d.,]*)\s*$/);
+      if(m){ name = m[1].trim(); priceStr = m[2]; }
+    }
+    if(name && priceStr){
+      results.push({ name: name.replace(/[,;]+$/,'').trim(), price: parsePriceString(priceStr) });
+    }
+  });
+  return results;
+}
+
+let pasteCatalogParsed = [];
+
+function openPasteCatalogModal(){
+  $('pasteCatalogText').value = '';
+  $('pasteCatalogPreview').innerHTML = '';
+  $('pasteCatalogModal').classList.add('open');
+}
+function closePasteCatalogModal(){
+  $('pasteCatalogModal').classList.remove('open');
+}
+
+function renderPasteCatalogPreview(){
+  const box = $('pasteCatalogPreview');
+  if(pasteCatalogParsed.length === 0){
+    box.innerHTML = '<p class="history-empty">No se detectaron filas con nombre y precio. Revisa el formato e intenta de nuevo.</p>';
+    return;
+  }
+  box.innerHTML = `
+    <p class="field-hint">Se detectaron ${pasteCatalogParsed.length} producto(s). Revisa y corrige lo que haga falta antes de confirmar — puedes borrar una fila si no aplica.</p>
+    <div class="paste-preview-rows">
+      ${pasteCatalogParsed.map((p,i)=>`
+        <div class="paste-preview-row" data-idx="${i}">
+          <input class="paste-name" value="${escapeHtml(p.name)}">
+          <input class="paste-price" type="number" min="0" value="${p.price}">
+          <button class="paste-remove" type="button" title="Quitar">×</button>
+        </div>
+      `).join('')}
+    </div>
+    <button id="confirmPasteCatalogFinalBtn" class="btn btn-primary btn-small" style="margin-top:14px;" type="button">✅ Importar productos al catálogo</button>
+  `;
+  box.querySelectorAll('.paste-remove').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      const idx = Number(e.target.closest('.paste-preview-row').dataset.idx);
+      pasteCatalogParsed.splice(idx,1);
+      renderPasteCatalogPreview();
+    });
+  });
+  $('confirmPasteCatalogFinalBtn').addEventListener('click', importParsedCatalog);
+}
+
+async function importParsedCatalog(){
+  const rows = $('pasteCatalogPreview').querySelectorAll('.paste-preview-row');
+  const finalItems = [];
+  rows.forEach(row=>{
+    const name = row.querySelector('.paste-name').value.trim();
+    const price = Number(row.querySelector('.paste-price').value) || 0;
+    if(name) finalItems.push({name, price});
+  });
+  if(finalItems.length === 0) return;
+
+  let added=0, updated=0;
+  finalItems.forEach(({name, price})=>{
+    let existing = catalogCache.find(c => (c.name||'').toLowerCase()===name.toLowerCase());
+    const record = { id: existing ? existing.id : 'cat'+Date.now()+Math.random().toString(36).slice(2,7), name, price };
+    if(existing){ catalogCache = catalogCache.filter(c=>c.id!==existing.id); updated++; }
+    else added++;
+    catalogCache.push(record);
+  });
+
+  try{
+    const res = await storageSet(CATALOG_KEY, JSON.stringify(catalogCache), false);
+    if(!res) throw new Error('sin respuesta');
+    renderCatalogPicker();
+    closePasteCatalogModal();
+    $('saveStatus').textContent = `Importación completa: ${added} nuevos, ${updated} actualizados.`;
+  }catch(e){
+    $('pasteCatalogPreview').insertAdjacentHTML('beforeend', '<p style="color:var(--danger);margin-top:10px;">No se pudo guardar. Intenta de nuevo.</p>');
+    console.error(e);
+  }
+}
+
 async function loadCatalog(){
   try{
     const res = await storageGet(CATALOG_KEY, false);
@@ -2109,99 +2209,6 @@ function refreshMaintClientSelects(){
   $('maintFilterClient').value = currentFilter;
 }
 
-// Sugiere en el campo "Equipo" los equipos que ya se le han registrado a este
-// cliente, para que al escribir un mantenimiento nuevo del mismo PC uses
-// siempre el mismo nombre (así el historial queda agrupado correctamente).
-function refreshMaintEquipmentOptions(clientId){
-  const datalist = $('maintEquipmentList');
-  const hint = $('maintEquipmentHint');
-  if(!clientId){
-    datalist.innerHTML = '';
-    hint.style.display = 'none';
-    return;
-  }
-  const seen = new Set();
-  const names = [];
-  [...maintenanceCache]
-    .filter(m => m.clientId === clientId)
-    .sort((a,b)=> (b.date||'').localeCompare(a.date||''))
-    .forEach(m=>{
-      const key = (m.equipment||'').trim();
-      if(key && !seen.has(key.toLowerCase())){
-        seen.add(key.toLowerCase());
-        names.push(key);
-      }
-    });
-  datalist.innerHTML = names.map(n => `<option value="${escapeAttr(n)}"></option>`).join('');
-  hint.style.display = names.length ? '' : 'none';
-}
-
-// Busca, para un cliente y nombre de equipo dados, el mantenimiento más
-// reciente registrado (comparación sin distinguir mayúsculas/espacios).
-function findLatestMaintForEquipment(clientId, equipmentName){
-  const norm = (equipmentName||'').trim().toLowerCase();
-  if(!clientId || !norm) return null;
-  const matches = maintenanceCache.filter(m => m.clientId === clientId && (m.equipment||'').trim().toLowerCase() === norm);
-  if(matches.length === 0) return null;
-  matches.sort((a,b)=> (b.date||'').localeCompare(a.date||'') || (b.createdAt||0)-(a.createdAt||0));
-  return matches[0];
-}
-
-// Aplica un valor a un <select> con opción "Otra/Otro": si el valor coincide
-// con una opción existente la selecciona, si no, activa el modo "especificar".
-function applyMaintSelectOrOther(selectId, wrapId, otherId, otherLabel, value){
-  const select = $(selectId);
-  const wrap = $(wrapId);
-  const otherInput = $(otherId);
-  if(!value){
-    select.value = '';
-    wrap.style.display = 'none';
-    otherInput.value = '';
-    return;
-  }
-  const hasOption = Array.from(select.options).some(o => o.value === value);
-  if(hasOption){
-    select.value = value;
-    wrap.style.display = 'none';
-    otherInput.value = '';
-  }else{
-    select.value = otherLabel;
-    wrap.style.display = '';
-    otherInput.value = value;
-  }
-}
-
-function maintSpecsFieldsAreEmpty(){
-  return !$('maintBrand').value && !$('maintSerial').value.trim() && !$('maintReference').value.trim() &&
-    !$('maintProcessor').value && !$('maintRAM').value && !$('maintDiskType').value && !$('maintDiskCapacity').value &&
-    !$('maintOS').value && !$('maintOSVersion').value.trim() && !$('maintBackup').value && !$('maintObservaciones').value.trim();
-}
-
-// Si el equipo escrito coincide con uno ya registrado a este cliente, rellena
-// las especificaciones técnicas con las del último mantenimiento de ese
-// equipo, para no volver a teclearlas si no han cambiado.
-function tryAutofillMaintEquipmentSpecs(){
-  const clientId = $('maintClient').value;
-  const equipment = $('maintEquipment').value;
-  if(!clientId || !equipment.trim()) return;
-  const match = findLatestMaintForEquipment(clientId, equipment);
-  if(!match || !maintSpecsFieldsAreEmpty()) return;
-  const specs = match.specs || {};
-  applyMaintSelectOrOther('maintBrand','maintBrandOtherWrap','maintBrandOther','Otra', specs.brand||'');
-  $('maintSerial').value = specs.serial || '';
-  $('maintReference').value = specs.reference || '';
-  applyMaintSelectOrOther('maintProcessor','maintProcessorOtherWrap','maintProcessorOther','Otro', specs.processor||'');
-  applyMaintSelectOrOther('maintRAM','maintRAMOtherWrap','maintRAMOther','Otra', specs.ram||'');
-  $('maintDiskType').value = (specs.diskType && Array.from($('maintDiskType').options).some(o=>o.value===specs.diskType)) ? specs.diskType : '';
-  applyMaintSelectOrOther('maintDiskCapacity','maintDiskOtherWrap','maintDiskOther','Otra', specs.diskCapacity||'');
-  $('maintOS').value = (specs.os && Array.from($('maintOS').options).some(o=>o.value===specs.os)) ? specs.os : '';
-  $('maintOSVersion').value = specs.osVersion || '';
-  $('maintBackup').value = specs.backup || '';
-  $('maintObservaciones').value = specs.observaciones || '';
-  $('maintSpecsBlock').open = true;
-  $('maintStatus').textContent = `Se autocompletaron las especificaciones del último mantenimiento de "${match.equipment}". Verifica y actualiza si algo cambió.`;
-}
-
 function quickNextDate(months){
   const base = $('maintDate').value ? new Date($('maintDate').value+'T00:00:00') : new Date();
   base.setMonth(base.getMonth()+months);
@@ -2285,7 +2292,6 @@ async function saveMaintenance(){
     if(!res) throw new Error('sin respuesta');
     renderMaintList();
     updateMaintBadge();
-    refreshMaintEquipmentOptions(client.id);
     clearMaintForm();
     $('maintStatus').textContent = 'Mantenimiento registrado.';
   }catch(e){
@@ -2342,71 +2348,27 @@ function maintUrgencyClass(nextDate){
   return '';
 }
 
-// Construye las filas de la tabla de especificaciones técnicas de un equipo,
-// a partir de los datos ya guardados en el registro de mantenimiento.
-function maintSpecsRowsHtml(specs){
-  if(!specs) return '';
-  const disco = [specs.diskType, specs.diskCapacity].filter(Boolean).join(' · ');
-  const so = [specs.os, specs.osVersion].filter(Boolean).join(' ');
-  const rows = [
-    ['Marca', specs.brand],
-    ['No. Serial', specs.serial],
-    ['Referencia', specs.reference],
-    ['Procesador', specs.processor],
-    ['Memoria RAM', specs.ram],
-    ['Disco', disco],
-    ['Sistema operativo', so],
-    ['Back Up', specs.backup ? (specs.backup==='si' ? 'Sí' : 'No') : ''],
-    ['Observaciones', specs.observaciones]
-  ].filter(([,v]) => v && String(v).trim());
-  if(rows.length===0) return '';
-  return rows.map(([label,val]) => `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(val)}</td></tr>`).join('');
+function formatMaintSpecLines(specs){
+  if(!specs) return null;
+  const idParts = [];
+  if(specs.brand) idParts.push(specs.brand);
+  if(specs.reference) idParts.push(specs.reference);
+  if(specs.serial) idParts.push('Serial ' + specs.serial);
+
+  const specParts = [];
+  if(specs.processor) specParts.push(specs.processor);
+  if(specs.ram) specParts.push(specs.ram + ' RAM');
+  const disk = [specs.diskType, specs.diskCapacity].filter(Boolean).join(' ');
+  if(disk) specParts.push(disk);
+  if(specs.os) specParts.push(specs.os + (specs.osVersion ? ' ' + specs.osVersion : ''));
+  if(specs.backup) specParts.push('Backup: ' + specs.backup);
+
+  return {
+    idLine: idParts.join(' · '),
+    specLine: specParts.join(' · ')
+  };
 }
 
-// Tarjeta individual de un mantenimiento: resumen siempre visible (equipo,
-// marca/serial si existen, fecha, tipo) + detalle plegable con specs completas.
-function renderMaintRecordCard(m, typeLabel){
-  const specsRows = maintSpecsRowsHtml(m.specs);
-  const idTag = (m.specs && (m.specs.brand || m.specs.serial))
-    ? ` <span style="font-weight:400;color:var(--ink-soft);">· ${[m.specs.brand, m.specs.serial ? 'S/N '+m.specs.serial : ''].filter(Boolean).join(' · ')}</span>`
-    : '';
-  return `
-    <div class="maint-record-card ${maintUrgencyClass(m.nextDate)}" data-id="${m.id}">
-      <div class="maint-record-summary">
-        <div class="maint-record-summary-left">
-          <div class="maint-record-equipment">💻 ${escapeHtml(m.equipment)}${idTag}</div>
-          <div class="maint-record-meta">
-            <span class="maint-type-badge maint-type-${m.type}">${typeLabel[m.type]||m.type}</span>
-            <span>Realizado: ${m.date ? formatDisplayDate(m.date) : '—'}</span>
-            ${m.nextDate ? `<span class="maint-next-tag">Próximo: ${formatDisplayDate(m.nextDate)}</span>` : ''}
-          </div>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:2px;">
-          <div class="maint-record-actions">
-            <button class="maint-report" title="Generar informe de hallazgos" type="button">📋</button>
-            <button class="maint-delete" title="Eliminar" type="button">×</button>
-          </div>
-          <span class="maint-record-chevron">▾</span>
-        </div>
-      </div>
-      <div class="maint-record-details">
-        ${m.desc ? `<div class="maint-desc" style="margin-top:8px;">${escapeHtml(m.desc)}</div>` : ''}
-        <div class="maint-specs-title">Especificaciones técnicas del equipo</div>
-        ${specsRows ? `<table class="maint-specs-table">${specsRows}</table>` : '<p class="maint-specs-empty">Sin especificaciones técnicas registradas para este equipo.</p>'}
-        ${m.nextDate ? `
-        <div class="maint-reminder-row">
-          <button class="btn btn-small btn-ghost maint-remind" data-channel="whatsapp" type="button">📱 Recordar por WhatsApp</button>
-          <button class="btn btn-small btn-ghost maint-remind" data-channel="gmail" type="button">✉️ Recordar por Gmail</button>
-        </div>` : ''}
-      </div>
-    </div>
-  `;
-}
-
-// Listado de mantenimientos en formato acordeón: un grupo por cliente
-// (para ver de un vistazo cuántos equipos tiene y cuáles tienen mantenimiento
-// próximo/vencido), y dentro de cada cliente, una tarjeta plegable por
-// mantenimiento con las especificaciones técnicas del equipo atendido.
 function renderMaintList(){
   const list = $('maintList');
   const filterClientId = $('maintFilterClient').value;
@@ -2417,72 +2379,82 @@ function renderMaintList(){
     list.innerHTML = '<p class="history-empty">No hay mantenimientos registrados todavía.</p>';
     return;
   }
+  const typeLabel = {preventivo:'Preventivo', correctivo:'Correctivo', predictivo:'Predictivo'};
 
+  // Agrupar por cliente, para poder distinguir fácilmente varios equipos de un mismo cliente
   const groups = {};
   records.forEach(m=>{
-    const key = m.clientId || ('__'+(m.clientName||'Cliente'));
-    if(!groups[key]) groups[key] = { clientName: m.clientName || 'Cliente', records: [] };
+    const key = m.clientId || m.clientName || 'sin-cliente';
+    if(!groups[key]) groups[key] = { clientName: m.clientName, records: [] };
     groups[key].records.push(m);
   });
-  const groupList = Object.values(groups).sort((a,b)=> a.clientName.localeCompare(b.clientName, 'es'));
+  const groupList = Object.values(groups);
   groupList.forEach(g => g.records.sort((a,b)=> (b.date||'').localeCompare(a.date||'')));
+  groupList.sort((a,b)=> (b.records[0].date||'').localeCompare(a.records[0].date||''));
 
-  const typeLabel = {preventivo:'Preventivo', correctivo:'Correctivo', predictivo:'Predictivo'};
-  const openByDefault = groupList.length === 1;
+  const singleGroup = groupList.length === 1;
 
-  list.innerHTML = `<div class="maint-accordion">` + groupList.map(g=>{
-    const urgentCount = g.records.filter(m=>{
-      const cls = maintUrgencyClass(m.nextDate);
-      return cls === 'maint-overdue' || cls === 'maint-soon';
-    }).length;
+  list.innerHTML = groupList.map(g => {
+    const anyUrgent = g.records.some(m => maintUrgencyClass(m.nextDate));
+    const itemsHtml = g.records.map(m => {
+      const specLines = formatMaintSpecLines(m.specs);
+      return `
+      <div class="maint-item ${maintUrgencyClass(m.nextDate)}" data-id="${m.id}">
+        <div class="maint-item-top">
+          <span class="maint-type-badge maint-type-${m.type}">${typeLabel[m.type]||m.type}</span>
+          <div style="display:flex;gap:4px;">
+            <button class="hist-dup maint-report" title="Generar informe de hallazgos" type="button">📋</button>
+            <button class="maint-delete" title="Eliminar" type="button">×</button>
+          </div>
+        </div>
+        <div class="maint-equipment">${escapeHtml(m.equipment)}</div>
+        ${specLines && specLines.idLine ? `<div class="maint-spec-line">${escapeHtml(specLines.idLine)}</div>` : ''}
+        ${specLines && specLines.specLine ? `<div class="maint-spec-line maint-spec-secondary">${escapeHtml(specLines.specLine)}</div>` : ''}
+        ${m.desc ? `<div class="maint-desc">${escapeHtml(m.desc)}</div>` : ''}
+        <div class="h-meta">Realizado: ${m.date ? formatDisplayDate(m.date) : '—'}</div>
+        ${m.nextDate ? `<div class="h-meta maint-next">Próximo: ${formatDisplayDate(m.nextDate)}</div>` : ''}
+        ${m.nextDate ? `
+        <div class="maint-reminder-row">
+          <button class="btn btn-small btn-ghost maint-remind" data-channel="whatsapp" type="button">📱 Recordar por WhatsApp</button>
+          <button class="btn btn-small btn-ghost maint-remind" data-channel="gmail" type="button">✉️ Recordar por Gmail</button>
+        </div>` : ''}
+      </div>`;
+    }).join('');
+
     return `
-    <div class="maint-client-acc${openByDefault ? ' open' : ''}">
-      <button class="maint-client-acc-header" type="button">
-        <span class="maint-client-acc-name">👤 ${escapeHtml(g.clientName)}</span>
-        <span class="maint-client-acc-right">
-          <span class="maint-client-acc-count">${g.records.length} equipo${g.records.length===1?'':'s'}${urgentCount ? ` · ⏰ ${urgentCount}` : ''}</span>
-          <span class="maint-client-acc-chevron">▾</span>
-        </span>
-      </button>
-      <div class="maint-client-acc-body">
-        ${g.records.map(m => renderMaintRecordCard(m, typeLabel)).join('')}
+    <div class="client-group${(singleGroup || filterClientId) ? ' open' : ''}">
+      <div class="client-head">
+        <div>
+          <h3 class="client-head-name">${escapeHtml(g.clientName)}</h3>
+          <span class="client-count">${g.records.length} equipo${g.records.length===1?'':'s'}${anyUrgent ? ' · revisar' : ''}</span>
+        </div>
+        <span class="chev">▾</span>
       </div>
+      <div class="client-body">${itemsHtml}</div>
     </div>`;
-  }).join('') + `</div>`;
+  }).join('');
 
-  list.querySelectorAll('.maint-client-acc-header').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      btn.closest('.maint-client-acc').classList.toggle('open');
-    });
-  });
-
-  list.querySelectorAll('.maint-record-summary').forEach(el=>{
-    el.addEventListener('click', e=>{
-      if(e.target.closest('.maint-record-actions')) return;
-      el.closest('.maint-record-card').classList.toggle('open');
-    });
+  list.querySelectorAll('.client-head').forEach(head=>{
+    head.addEventListener('click', ()=> head.parentElement.classList.toggle('open'));
   });
 
   list.querySelectorAll('.maint-report').forEach(btn=>{
     btn.addEventListener('click', e=>{
-      e.stopPropagation();
-      const id = e.target.closest('.maint-record-card').dataset.id;
+      const id = e.target.closest('.maint-item').dataset.id;
       openFindingsModal(id);
     });
   });
 
   list.querySelectorAll('.maint-remind').forEach(btn=>{
     btn.addEventListener('click', e=>{
-      e.stopPropagation();
-      const id = e.target.closest('.maint-record-card').dataset.id;
+      const id = e.target.closest('.maint-item').dataset.id;
       sendMaintReminder(id, btn.dataset.channel);
     });
   });
 
   list.querySelectorAll('.maint-delete').forEach(btn=>{
     btn.addEventListener('click', e=>{
-      e.stopPropagation();
-      const id = e.target.closest('.maint-record-card').dataset.id;
+      const id = e.target.closest('.maint-item').dataset.id;
       deleteMaintenance(id);
     });
   });
@@ -2492,7 +2464,6 @@ function openMaintDrawer(){
   $('maintDrawer').classList.add('open');
   $('maintOverlay').classList.add('open');
   refreshMaintClientSelects();
-  refreshMaintEquipmentOptions($('maintClient').value);
   if(!$('maintDate').value) $('maintDate').value = todayISO();
   switchMaintTab('records');
   renderMaintList();
@@ -4033,6 +4004,12 @@ $('restoreBackupInput').addEventListener('change', e=>{
   e.target.value = '';
 });
 $('exportCatalogBtn').addEventListener('click', exportCatalog);
+$('pasteCatalogBtn').addEventListener('click', openPasteCatalogModal);
+$('closePasteCatalog').addEventListener('click', closePasteCatalogModal);
+$('confirmPasteCatalogBtn').addEventListener('click', ()=>{
+  pasteCatalogParsed = parseCatalogPasteText($('pasteCatalogText').value);
+  renderPasteCatalogPreview();
+});
 $('importCatalogBtn').addEventListener('click', ()=> $('importCatalogInput').click());
 $('importCatalogInput').addEventListener('change', e=>{
   const file = e.target.files[0];
@@ -4164,8 +4141,6 @@ $('saveMaintBtn').addEventListener('click', saveMaintenance);
 $('maintPlus4').addEventListener('click', ()=>quickNextDate(4));
 $('maintPlus6').addEventListener('click', ()=>quickNextDate(6));
 $('maintFilterClient').addEventListener('change', renderMaintList);
-$('maintClient').addEventListener('change', ()=> refreshMaintEquipmentOptions($('maintClient').value));
-$('maintEquipment').addEventListener('change', tryAutofillMaintEquipmentSpecs);
 function setupMaintOtherToggle(selectId, wrapId, otherLabel){
   $(selectId).addEventListener('change', ()=>{
     $(wrapId).style.display = $(selectId).value === otherLabel ? '' : 'none';
