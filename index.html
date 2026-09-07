@@ -1753,6 +1753,57 @@ function parsePriceString(str){
 }
 
 function parseCatalogPasteText(text){
+  const blockResults = parseCatalogBlocks(text);
+  if(blockResults.length > 0) return blockResults;
+  return parseCatalogSimpleLines(text);
+}
+
+// Reconoce bloques tipo "página de categoría" donde cada producto viene
+// repartido en varias líneas (estado, código, descripción, precio, marca,
+// enlace "Ver Producto"), como en b2bfenix.com y sitios similares.
+function parseCatalogBlocks(text){
+  const rawLines = text.split(/\r?\n/).map(l=>l.trim());
+  const NOISE = /^(disponible|agotado|activavs|activa|vs|agregar|añadir|instalador|installer)$/i;
+  const isNoise = (l) => !l || NOISE.test(l) || /^[−\-+]+$/.test(l) || /^\[?ver producto\]?/i.test(l) || /^https?:\/\//i.test(l);
+  const priceRe = /\$\s*([\d][\d.,]*)/;
+  const brandRe = /^\[([^\]]+)\]\(/;
+
+  const results = [];
+  for(let i=0;i<rawLines.length;i++){
+    const line = rawLines[i];
+    if(!line) continue;
+    const priceMatch = line.match(priceRe);
+    if(!priceMatch) continue;
+
+    let j = i-1;
+    while(j>=0 && isNoise(rawLines[j])) j--;
+    if(j>=0 && /[.!]$/.test(rawLines[j]) && rawLines[j].length > 25){
+      j--;
+      while(j>=0 && isNoise(rawLines[j])) j--;
+    }
+    const nameLine = j>=0 ? rawLines[j] : '';
+    if(!nameLine || priceRe.test(nameLine)) continue;
+
+    let brand = '';
+    for(let k=i+1; k<Math.min(i+6, rawLines.length); k++){
+      const bm = rawLines[k].match(brandRe);
+      if(bm){ brand = bm[1]; break; }
+      if(/ver producto/i.test(rawLines[k])){
+        const prev = rawLines[k-1] || '';
+        if(prev && !isNoise(prev) && prev.length < 30 && !priceRe.test(prev)) brand = prev;
+        break;
+      }
+    }
+
+    const finalName = (brand ? brand + ' ' : '') + nameLine;
+    results.push({ name: finalName.trim(), price: parsePriceString(priceMatch[1]) });
+  }
+  return results;
+}
+
+// Formato simple: una línea por producto, con nombre y precio separados por
+// tabulación, comas, o varios espacios (típico al pegar desde Excel/Sheets).
+function parseCatalogSimpleLines(text){
   const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
   const results = [];
   lines.forEach(line=>{
