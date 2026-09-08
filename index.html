@@ -175,6 +175,24 @@
   .field-hint{font-size:11px;color:var(--ink-soft);margin:4px 0 0;font-style:italic;}
   .toggle-row{display:flex;align-items:flex-start;gap:10px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);cursor:pointer;font-size:12.5px;color:var(--ink);}
   .toggle-row input{margin-top:2px; width:16px; height:16px; accent-color:var(--ui-ink); cursor:pointer; flex-shrink:0;}
+
+  .proposal-toggle-card{
+    display:flex; align-items:flex-start; gap:12px; cursor:pointer;
+    background:var(--panel); border:1.5px solid var(--ui-line); border-radius:16px;
+    padding:14px 16px; margin-bottom:16px;
+  }
+  .proposal-toggle-card:has(input:checked){ border-color:var(--ui-ink); background:var(--ui-paper); }
+  .proposal-toggle-card input{ margin-top:3px; width:17px; height:17px; accent-color:var(--ui-ink); cursor:pointer; flex-shrink:0; }
+  .proposal-toggle-card .ptc-icon{ font-size:20px; flex-shrink:0; }
+  .proposal-toggle-card .ptc-text{ display:flex; flex-direction:column; gap:2px; }
+  .proposal-toggle-card .ptc-text strong{ font-family:'Baloo 2',sans-serif; font-size:14px; color:var(--ink); }
+  .proposal-toggle-card .ptc-text small{ font-size:11.5px; color:var(--ink-soft); line-height:1.4; }
+
+  .advanced-divider{
+    font-family:'Baloo 2',sans-serif; font-weight:600; font-size:11.5px;
+    color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.5px;
+    margin:22px 0 10px; padding-top:14px; border-top:1px dashed var(--ui-line);
+  }
   .required-mark{color:var(--danger);font-weight:600;}
   input.field-invalid{border-color:var(--danger);background:#FBEEEA;}
   .actions-row{display:flex;gap:10px;margin-top:6px;}
@@ -451,6 +469,15 @@
         <button type="button" data-type="cuenta">Cuenta de cobro</button>
       </div>
 
+      <label class="proposal-toggle-card" id="extendedProposalRow" style="display:none;">
+        <input type="checkbox" id="extendedProposal">
+        <span class="ptc-icon">📄</span>
+        <span class="ptc-text">
+          <strong>Propuesta completa</strong>
+          <small>Documento extendido y multipágina: presentación, alcance, obligaciones, garantía y firma — actívalo para proyectos más formales.</small>
+        </span>
+      </label>
+
       <details class="settings-block" id="settingsBlock">
         <summary><svg class="sec-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A9834F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>Tus datos (aparecen en el documento)</summary>
         <div class="field-grid">
@@ -487,32 +514,6 @@
         </div>
       </details>
 
-      <details class="settings-block" id="syncBlock">
-        <summary><svg class="sec-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A9834F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a5 5 0 1 1 1.3-9.8 6 6 0 0 1 11.2 3A4.5 4.5 0 0 1 20.5 19h-3"></path></svg>Sincronización en la nube (opcional)</summary>
-        <p class="field-hint" style="display:block;margin-bottom:10px;">Conecta tu Google Sheet para que tus clientes, cotizaciones y catálogo se vean iguales en cualquier computador o celular donde abras este archivo.</p>
-        <div class="field-grid">
-          <label style="grid-column:1/-1">URL de tu Web App de Google Apps Script<input id="syncUrlInput" placeholder="https://script.google.com/macros/s/..../exec"></label>
-        </div>
-        <div class="client-db-actions">
-          <button id="connectSyncBtn" class="btn btn-small btn-ghost" type="button">🔗 Conectar</button>
-          <button id="disconnectSyncBtn" class="btn btn-small btn-text" type="button" style="display:none;">Desconectar</button>
-        </div>
-        <p id="syncStatus" class="field-hint" style="display:block;margin-top:8px;">⚪ Sin sincronizar — los datos solo se guardan en este dispositivo.</p>
-      </details>
-
-      <details class="settings-block" id="backupBlock">
-        <summary><svg class="sec-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A9834F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Respaldo y restauración</summary>
-        <p class="field-hint" style="display:block;margin-bottom:10px;">Descarga un archivo con todos tus datos (clientes, cotizaciones, catálogo, mantenimientos, cuentas bancarias y plantilla) por si necesitas recuperarlos.</p>
-        <div class="client-db-actions">
-          <button id="fullBackupBtn" class="btn btn-small btn-ghost" type="button">💾 Descargar respaldo completo</button>
-          <div style="display:flex;gap:8px;">
-            <input id="restoreBackupInput" type="file" accept=".json" style="display:none;">
-            <button id="restoreBackupBtn" class="btn btn-small btn-text" type="button">📤 Restaurar desde respaldo</button>
-          </div>
-        </div>
-        <p id="backupStatus" class="field-hint" style="display:block;margin-top:8px;"></p>
-      </details>
-
       <details class="settings-block" id="clientBlock" open>
         <summary><svg class="sec-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A9834F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg>Cliente</summary>
         <div class="searchable-select" id="clientPickerWrap">
@@ -545,10 +546,6 @@
           <label>Fecha<input id="quoteDate" type="date"></label>
           <label>Válida hasta<input id="quoteValid" type="date"></label>
         </div>
-        <label class="toggle-row" id="extendedProposalRow" style="display:none;">
-          <input type="checkbox" id="extendedProposal">
-          <span>Propuesta completa (documento extendido, multipágina — presentación, alcance, obligaciones, garantía, firma)</span>
-        </label>
       </details>
 
       <details class="settings-block" id="proposalContentBlock" style="display:none;">
@@ -661,6 +658,34 @@
       <details class="settings-block" id="notesBlock">
         <summary><svg class="sec-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A9834F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg><span id="notesLabelText">Notas / condiciones</span></summary>
         <textarea id="notes" rows="3" placeholder="Forma de pago, tiempos de entrega, vigencia..." style="margin-top:10px;"></textarea>
+      </details>
+
+      <p class="advanced-divider">⚙️ Configuración técnica</p>
+
+      <details class="settings-block" id="syncBlock">
+        <summary><svg class="sec-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A9834F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a5 5 0 1 1 1.3-9.8 6 6 0 0 1 11.2 3A4.5 4.5 0 0 1 20.5 19h-3"></path></svg>Sincronización en la nube (opcional)</summary>
+        <p class="field-hint" style="display:block;margin-bottom:10px;">Conecta tu Google Sheet para que tus clientes, cotizaciones y catálogo se vean iguales en cualquier computador o celular donde abras este archivo.</p>
+        <div class="field-grid">
+          <label style="grid-column:1/-1">URL de tu Web App de Google Apps Script<input id="syncUrlInput" placeholder="https://script.google.com/macros/s/..../exec"></label>
+        </div>
+        <div class="client-db-actions">
+          <button id="connectSyncBtn" class="btn btn-small btn-ghost" type="button">🔗 Conectar</button>
+          <button id="disconnectSyncBtn" class="btn btn-small btn-text" type="button" style="display:none;">Desconectar</button>
+        </div>
+        <p id="syncStatus" class="field-hint" style="display:block;margin-top:8px;">⚪ Sin sincronizar — los datos solo se guardan en este dispositivo.</p>
+      </details>
+
+      <details class="settings-block" id="backupBlock">
+        <summary><svg class="sec-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#A9834F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Respaldo y restauración</summary>
+        <p class="field-hint" style="display:block;margin-bottom:10px;">Descarga un archivo con todos tus datos (clientes, cotizaciones, catálogo, mantenimientos, cuentas bancarias y plantilla) por si necesitas recuperarlos.</p>
+        <div class="client-db-actions">
+          <button id="fullBackupBtn" class="btn btn-small btn-ghost" type="button">💾 Descargar respaldo completo</button>
+          <div style="display:flex;gap:8px;">
+            <input id="restoreBackupInput" type="file" accept=".json" style="display:none;">
+            <button id="restoreBackupBtn" class="btn btn-small btn-text" type="button">📤 Restaurar desde respaldo</button>
+          </div>
+        </div>
+        <p id="backupStatus" class="field-hint" style="display:block;margin-top:8px;"></p>
       </details>
 
       <div class="actions-row">
@@ -3186,20 +3211,33 @@ function renderPreview(){
     const contactLine = [biz.phone ? 'Cel: '+biz.phone : '', biz.email ? 'E-mail: '+biz.email : '']
       .filter(Boolean).join(' — ');
 
+    // Numeración dinámica: solo cuenta los numerales que sí van a aparecer,
+    // para que nunca queden saltos (ej. pasar de "1." a "3.") cuando algún
+    // campo opcional (Alcance / Otros aspectos / Entrega) queda vacío.
+    let secN = 0;
+    const numPresentacion = ++secN;
+    const numAlcance = prop.alcance ? ++secN : null;
+    const numCondiciones = ++secN;
+    const numOferente = ++secN;
+    const numCliente = ++secN;
+    const numOtros = prop.otros ? ++secN : null;
+    const numEntrega = prop.entrega ? ++secN : null;
+    const numGarantia = ++secN;
+
     proposalTopHtml = `
       <div class="prop-intro">${escapeHtml(tpl.intro)}</div>
       <div class="prop-section">
-        <h3>1. Presentación</h3>
+        <h3>${numPresentacion}. Presentación</h3>
         <div class="prop-text">${escapeHtml(tpl.presentacion)}${contactLine ? ' '+escapeHtml(biz.name)+' '+escapeHtml(contactLine)+'.' : ''}</div>
       </div>
       ${prop.alcance ? `
       <div class="prop-section">
-        <h3>2. Alcance</h3>
+        <h3>${numAlcance}. Alcance</h3>
         <div class="prop-text">${escapeHtml(prop.alcance)}</div>
       </div>` : ''}
       <div class="prop-section">
-        <h3>3. Condiciones comerciales</h3>
-        <div class="prop-subhead">3.1. Inversión — Lista de precios</div>
+        <h3>${numCondiciones}. Condiciones comerciales</h3>
+        <div class="prop-subhead">${numCondiciones}.1. Inversión — Lista de precios</div>
       </div>
     `;
 
@@ -3217,25 +3255,25 @@ function renderPreview(){
     proposalBottomHtml = `
       ${condTableHtml}
       <div class="prop-section">
-        <h3>4. Obligaciones del oferente</h3>
+        <h3>${numOferente}. Obligaciones del oferente</h3>
         <div class="prop-text">${escapeHtml(tpl.obligacionesOferente)}</div>
       </div>
       <div class="prop-section">
-        <h3>5. Obligaciones del cliente</h3>
+        <h3>${numCliente}. Obligaciones del cliente</h3>
         <div class="prop-text">${escapeHtml(tpl.obligacionesCliente)}</div>
       </div>
       ${prop.otros ? `
       <div class="prop-section">
-        <h3>6. Otros aspectos</h3>
+        <h3>${numOtros}. Otros aspectos</h3>
         <div class="prop-text">${escapeHtml(prop.otros)}</div>
       </div>` : ''}
       ${prop.entrega ? `
       <div class="prop-section">
-        <h3>7. Entrega e instalación</h3>
+        <h3>${numEntrega}. Entrega e instalación</h3>
         <div class="prop-text">El proyecto se entregará en un plazo de ${escapeHtml(prop.entrega)}, previa autorización del cronograma de trabajo, contados a partir de la fecha de inicio y pago del respectivo anticipo.</div>
       </div>` : ''}
       <div class="prop-section">
-        <h3>8. Garantía</h3>
+        <h3>${numGarantia}. Garantía</h3>
         <div class="prop-text">${escapeHtml(tpl.garantia)}</div>
       </div>
       <div class="prop-closing">${escapeHtml(tpl.cierre)}</div>
