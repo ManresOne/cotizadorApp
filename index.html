@@ -228,8 +228,9 @@
   .doc-table{width:100%;border-collapse:collapse;margin-bottom:18px;}
   .doc-table th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);border-bottom:1.5px solid var(--ink);padding:0 0 8px;}
   .doc-table th:last-child,.doc-table td:last-child{text-align:right;}
-  .doc-table td{padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
-  .doc-item-desc{display:flex;align-items:center;gap:10px;}
+  .doc-table td{padding:13px 0;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:top;line-height:1.45;}
+  .doc-item-desc{display:flex;align-items:flex-start;gap:10px;}
+  .doc-item-desc span{padding-top:1px;}
   .doc-item-thumb{width:42px;height:42px;object-fit:contain;background:#fff;border-radius:4px;border:1px solid var(--line);flex-shrink:0;}
   .doc-table .cell-amount{font-family:'IBM Plex Mono',monospace;}
   .doc-empty-row td{color:var(--ink-soft);font-style:italic;font-size:12.5px;}
@@ -283,6 +284,7 @@
   .hist-item-top{display:flex;justify-content:space-between;align-items:flex-start;}
   .hist-dup{background:none;border:1px solid var(--line);border-radius:3px;color:var(--ink-soft);cursor:pointer;font-size:13px;line-height:1;padding:2px 5px;}
   .hist-dup:hover{border-color:var(--ui-ink); color:var(--ui-ink);}
+  .h-profit{font-size:11px;color:var(--ink-soft);margin-top:4px;font-family:'IBM Plex Mono',monospace;}
   .status-badge{display:inline-block;margin-top:6px;border:none;border-radius:10px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.5px;text-transform:uppercase;padding:3px 9px;cursor:pointer;}
   .status-badge.status-accepted{background:var(--ui-ink); color:#fff;}
   .status-badge.status-expired{background:var(--danger);color:#fff;}
@@ -321,6 +323,7 @@
   .dash-detail-hint{font-size:11px;color:var(--ink-soft);margin:0 0 10px;}
   .dash-card .d-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;}
   .dash-card .d-value{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--ink);}
+  .dash-card .d-note{font-size:10px;color:var(--ink-soft);margin-top:4px;line-height:1.3;}
   .dash-card.accent .d-value{color:var(--ui-ink);}
   .dash-card.warn .d-value{color:var(--ui-ink);}
   .dash-charts{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
@@ -2627,6 +2630,7 @@ function computeDashboardData(){
   monthKeys.forEach(k => { cotizadoByMonth[k]=0; facturadoPagadoByMonth[k]=0; facturadoPendienteByMonth[k]=0; conversionDaysSumByMonth[k]=0; conversionCountByMonth[k]=0; });
 
   let totalPaid=0, totalPending=0, countCotizaciones=0, countCuentas=0;
+  let totalProfit=0, itemsWithCostCount=0, itemsTotalCount=0;
   const clientTotals = {};
 
   quotesCache.forEach(q => {
@@ -2642,6 +2646,10 @@ function computeDashboardData(){
         if(mk && mk in facturadoPagadoByMonth) facturadoPagadoByMonth[mk] += total;
         const cname = (q.client && q.client.name) || 'Sin nombre';
         clientTotals[cname] = (clientTotals[cname]||0) + total;
+        const p = computeQuoteProfit(q);
+        totalProfit += p.profit;
+        itemsWithCostCount += p.itemsWithCost;
+        itemsTotalCount += p.totalItems;
       }else{
         totalPending += total;
         if(mk && mk in facturadoPendienteByMonth) facturadoPendienteByMonth[mk] += total;
@@ -2663,7 +2671,8 @@ function computeDashboardData(){
   monthKeys.forEach(k => { avgConversionDaysByMonth[k] = conversionCountByMonth[k] ? Math.round(conversionDaysSumByMonth[k]/conversionCountByMonth[k]) : null; });
 
   return { monthKeys, cotizadoByMonth, facturadoPagadoByMonth, facturadoPendienteByMonth,
-           totalPaid, totalPending, countCotizaciones, countCuentas, topClients, avgConversionDaysByMonth };
+           totalPaid, totalPending, countCotizaciones, countCuentas, topClients, avgConversionDaysByMonth,
+           totalProfit, itemsWithCostCount, itemsTotalCount };
 }
 
 let dashCharts = {};
@@ -2677,6 +2686,7 @@ function renderDashCards(data){
   $('dashCards').innerHTML = `
     <div class="dash-card accent" data-metric="paid"><div class="d-label">Total cobrado</div><div class="d-value">${formatMoney(data.totalPaid)}</div></div>
     <div class="dash-card warn" data-metric="pending"><div class="d-label">Por cobrar</div><div class="d-value">${formatMoney(data.totalPending)}</div></div>
+    <div class="dash-card accent" data-metric="profit"><div class="d-label">Ganancia neta</div><div class="d-value">${formatMoney(data.totalProfit)}</div>${data.itemsWithCostCount < data.itemsTotalCount ? `<div class="d-note">Basada en ${data.itemsWithCostCount}/${data.itemsTotalCount} ítems con costo de proveedor registrado</div>` : ''}</div>
     <div class="dash-card" data-metric="cotizaciones"><div class="d-label">Cotizaciones creadas</div><div class="d-value">${data.countCotizaciones}</div></div>
     <div class="dash-card" data-metric="cuentas"><div class="d-label">Cuentas de cobro</div><div class="d-value">${data.countCuentas}</div></div>
   `;
@@ -3596,7 +3606,8 @@ async function togglePaidStatus(id){
   const q = quotesCache.find(x=>x.id===id);
   if(!q) return;
   q.paid = !q.paid;
-  renderBilledTable(); // respuesta visual inmediata
+  renderHistory();       // por si se togglea desde la lista principal
+  renderBilledTable();   // respuesta visual inmediata en la pestaña Facturado
   $('billedStatus').textContent = 'Guardando...';
   try{
     const res = await storageSet(STORAGE_KEY, JSON.stringify(quotesCache), false);
@@ -3604,14 +3615,30 @@ async function togglePaidStatus(id){
     $('billedStatus').textContent = '';
   }catch(e){
     q.paid = !q.paid; // revertir si falló
+    renderHistory();
     renderBilledTable();
     $('billedStatus').textContent = 'No se pudo guardar el cambio (fallo temporal del almacenamiento). Vuelve a intentarlo en unos segundos.';
     console.error('No se pudo actualizar el estado de pago', e);
   }
 }
 
+function computeQuoteProfit(q){
+  let profit = 0, itemsWithCost = 0;
+  const totalItems = (q.items||[]).length;
+  (q.items||[]).forEach(i=>{
+    if(i.calc && i.calc.cost){
+      const costWithIva = i.calc.cost + (i.calc.cost*(i.calc.iva||0)/100);
+      profit += ((Number(i.price)||0) - costWithIva) * (Number(i.qty)||0);
+      itemsWithCost++;
+    }
+  });
+  return { profit, itemsWithCost, totalItems };
+}
+
 function quoteStatusInfo(q){
-  if(q.docType !== 'cotizacion') return null;
+  if(q.docType === 'cuenta'){
+    return q.paid ? {label:'Pagado', cls:'status-accepted'} : {label:'Pendiente', cls:'status-pending'};
+  }
   if(q.accepted) return {label:'Aceptada', cls:'status-accepted'};
   const today = new Date(); today.setHours(0,0,0,0);
   if(q.valid){
@@ -3658,6 +3685,7 @@ function renderHistory(){
   const sorted = [...filtered].sort((a,b)=> (b.savedAt||0)-(a.savedAt||0));
   list.innerHTML = sorted.map(q => {
     const status = quoteStatusInfo(q);
+    const profitInfo = computeQuoteProfit(q);
     return `
     <div class="history-item" data-id="${q.id}">
       <div class="hist-item-top">
@@ -3669,6 +3697,7 @@ function renderHistory(){
       </div>
       <div class="h-client">${escapeHtml(q.client && q.client.name || 'Sin nombre')}</div>
       <div class="h-meta">${q.date ? formatDisplayDate(q.date) : ''} · ${formatMoney(q.total)}</div>
+      ${profitInfo.itemsWithCost > 0 ? `<div class="h-profit">💰 Ganancia estimada: ${formatMoney(profitInfo.profit)}${profitInfo.itemsWithCost < profitInfo.totalItems ? ` (${profitInfo.itemsWithCost}/${profitInfo.totalItems} ítems con costo registrado)` : ''}</div>` : ''}
       ${status ? `<button class="status-badge ${status.cls}" type="button">${status.label}</button>` : ''}
     </div>
   `;
@@ -3690,7 +3719,9 @@ function renderHistory(){
     if(statusBtn){
       statusBtn.addEventListener('click', (e)=>{
         e.stopPropagation();
-        toggleQuoteAccepted(el.dataset.id);
+        const q = quotesCache.find(x=>x.id===el.dataset.id);
+        if(q && q.docType === 'cuenta') togglePaidStatus(el.dataset.id);
+        else toggleQuoteAccepted(el.dataset.id);
       });
     }
   });
