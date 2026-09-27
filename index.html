@@ -227,12 +227,13 @@
 
   .doc-table{width:100%;border-collapse:collapse;margin-bottom:18px;}
   .doc-table th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);border-bottom:1.5px solid var(--ink);padding:0 0 8px;}
-  .doc-table th:last-child,.doc-table td:last-child{text-align:right;}
+  .doc-table th:not(:first-child){text-align:right;padding-left:14px;}
   .doc-table td{padding:13px 0;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:top;line-height:1.45;}
+  .doc-table td:not(:first-child){padding-left:14px;}
   .doc-item-desc{display:flex;align-items:flex-start;gap:10px;}
   .doc-item-desc span{padding-top:1px;}
   .doc-item-thumb{width:42px;height:42px;object-fit:contain;background:#fff;border-radius:4px;border:1px solid var(--line);flex-shrink:0;}
-  .doc-table .cell-amount{font-family:'IBM Plex Mono',monospace;}
+  .doc-table .cell-amount{font-family:'IBM Plex Mono',monospace;text-align:right;}
   .doc-empty-row td{color:var(--ink-soft);font-style:italic;font-size:12.5px;}
 
   .totals{margin-left:auto;width:230px;font-family:'IBM Plex Mono',monospace;font-size:13px;}
@@ -289,6 +290,7 @@
   .status-badge.status-accepted{background:var(--ui-ink); color:#fff;}
   .status-badge.status-expired{background:var(--danger);color:#fff;}
   .status-badge.status-pending{background:#F1F0EA;color:var(--ink-soft);border:1px solid var(--line);}
+  .status-badge.status-rejected{background:#8a8a86;color:#fff;}
   .history-item .h-client{font-weight:500;font-size:13.5px;margin:3px 0 2px;}
   .history-item .h-meta{font-size:11.5px;color:var(--ink-soft);}
   .history-empty{font-size:12.5px;color:var(--ink-soft);font-style:italic;}
@@ -948,6 +950,15 @@
         <h3>Tiempo de cotización a facturación (días promedio)</h3>
         <div class="dash-canvas-wrap"><canvas id="chartConversionTime"></canvas></div>
         <p class="field-hint" style="margin-top:8px;">Solo cuenta cotizaciones convertidas a cuenta de cobro con el botón "Convertir a cuenta de cobro" desde ahora en adelante — las conversiones anteriores a este cambio no quedaron registradas.</p>
+      </div>
+      <div class="dash-chart-box">
+        <h3>Ganancia neta por mes</h3>
+        <div class="dash-canvas-wrap"><canvas id="chartProfitMonth"></canvas></div>
+        <p class="field-hint" style="margin-top:8px;">Solo cuentas de cobro pagadas con al menos un ítem con costo de proveedor registrado (🧮).</p>
+      </div>
+      <div class="dash-chart-box">
+        <h3>Ganancia neta por cliente</h3>
+        <div class="dash-canvas-wrap"><canvas id="chartProfitClient"></canvas></div>
       </div>
     </div>
   </div>
@@ -2627,11 +2638,22 @@ function computeDashboardData(){
   const monthKeys = getLast12MonthKeys();
   const cotizadoByMonth = {}, facturadoPagadoByMonth = {}, facturadoPendienteByMonth = {};
   const conversionDaysSumByMonth = {}, conversionCountByMonth = {};
-  monthKeys.forEach(k => { cotizadoByMonth[k]=0; facturadoPagadoByMonth[k]=0; facturadoPendienteByMonth[k]=0; conversionDaysSumByMonth[k]=0; conversionCountByMonth[k]=0; });
+  const gananciaByMonth = {};
+  monthKeys.forEach(k => { cotizadoByMonth[k]=0; facturadoPagadoByMonth[k]=0; facturadoPendienteByMonth[k]=0; conversionDaysSumByMonth[k]=0; conversionCountByMonth[k]=0; gananciaByMonth[k]=0; });
 
   let totalPaid=0, totalPending=0, countCotizaciones=0, countCuentas=0;
   let totalProfit=0, itemsWithCostCount=0, itemsTotalCount=0;
   const clientTotals = {};
+
+  // Cotizaciones que ya se convirtieron a cuenta de cobro — su anticipo ya
+  // debería estar reflejado en la cuenta resultante, así que no se cuenta
+  // aparte aquí (para no duplicarlo).
+  const convertedQuoteNumbers = new Set(
+    quotesCache.filter(q=>q.docType==='cuenta' && q.convertedFrom && q.convertedFrom.number)
+               .map(q=>q.convertedFrom.number)
+  );
+  let totalAdvancesOpen = 0;
+  const clientProfits = {};
 
   quotesCache.forEach(q => {
     const mk = monthKeyOf(q.date);
@@ -2639,6 +2661,9 @@ function computeDashboardData(){
     if(q.docType === 'cotizacion'){
       countCotizaciones++;
       if(mk && mk in cotizadoByMonth) cotizadoByMonth[mk] += total;
+      if(Number(q.advance)>0 && !convertedQuoteNumbers.has(q.number)){
+        totalAdvancesOpen += Number(q.advance);
+      }
     }else if(q.docType === 'cuenta'){
       countCuentas++;
       if(q.paid){
@@ -2650,6 +2675,10 @@ function computeDashboardData(){
         totalProfit += p.profit;
         itemsWithCostCount += p.itemsWithCost;
         itemsTotalCount += p.totalItems;
+        if(p.itemsWithCost > 0){
+          if(mk && mk in gananciaByMonth) gananciaByMonth[mk] += p.profit;
+          clientProfits[cname] = (clientProfits[cname]||0) + p.profit;
+        }
       }else{
         totalPending += total;
         if(mk && mk in facturadoPendienteByMonth) facturadoPendienteByMonth[mk] += total;
@@ -2667,12 +2696,13 @@ function computeDashboardData(){
   });
 
   const topClients = Object.entries(clientTotals).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const topClientsByProfit = Object.entries(clientProfits).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const avgConversionDaysByMonth = {};
   monthKeys.forEach(k => { avgConversionDaysByMonth[k] = conversionCountByMonth[k] ? Math.round(conversionDaysSumByMonth[k]/conversionCountByMonth[k]) : null; });
 
   return { monthKeys, cotizadoByMonth, facturadoPagadoByMonth, facturadoPendienteByMonth,
            totalPaid, totalPending, countCotizaciones, countCuentas, topClients, avgConversionDaysByMonth,
-           totalProfit, itemsWithCostCount, itemsTotalCount };
+           totalProfit, itemsWithCostCount, itemsTotalCount, totalAdvancesOpen, gananciaByMonth, topClientsByProfit };
 }
 
 let dashCharts = {};
@@ -2686,6 +2716,7 @@ function renderDashCards(data){
   $('dashCards').innerHTML = `
     <div class="dash-card accent" data-metric="paid"><div class="d-label">Total cobrado</div><div class="d-value">${formatMoney(data.totalPaid)}</div></div>
     <div class="dash-card warn" data-metric="pending"><div class="d-label">Por cobrar</div><div class="d-value">${formatMoney(data.totalPending)}</div></div>
+    ${data.totalAdvancesOpen > 0 ? `<div class="dash-card warn" data-metric="advances"><div class="d-label">Anticipos recibidos</div><div class="d-value">${formatMoney(data.totalAdvancesOpen)}</div><div class="d-note">De cotizaciones aún sin convertir a cuenta de cobro</div></div>` : ''}
     <div class="dash-card accent" data-metric="profit"><div class="d-label">Ganancia neta</div><div class="d-value">${formatMoney(data.totalProfit)}</div>${data.itemsWithCostCount < data.itemsTotalCount ? `<div class="d-note">Basada en ${data.itemsWithCostCount}/${data.itemsTotalCount} ítems con costo de proveedor registrado</div>` : ''}</div>
     <div class="dash-card" data-metric="cotizaciones"><div class="d-label">Cotizaciones creadas</div><div class="d-value">${data.countCotizaciones}</div></div>
     <div class="dash-card" data-metric="cuentas"><div class="d-label">Cuentas de cobro</div><div class="d-value">${data.countCuentas}</div></div>
@@ -2814,6 +2845,27 @@ function renderDashCharts(data){
     type:'doughnut',
     data:{ labels:['Pagado','Pendiente'], datasets:[{ data:[data.totalPaid, data.totalPending], backgroundColor:[CHART_COLORS.teal, CHART_COLORS.brass] }] },
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ font:{family:font, size:11}, color: CHART_COLORS.inkSoft } } } }
+  });
+
+  dashCharts.profitMonth = new Chart($('chartProfitMonth').getContext('2d'), {
+    type:'bar',
+    data:{ labels, datasets:[{ label:'Ganancia neta', data: data.monthKeys.map(k=>data.gananciaByMonth[k]), backgroundColor: CHART_COLORS.teal, borderRadius:3 }] },
+    options:{ ...baseOptions, plugins:{ legend:{ display:false } } }
+  });
+
+  const profitLabels = data.topClientsByProfit.map(c=>c[0]);
+  const profitValues = data.topClientsByProfit.map(c=>c[1]);
+  dashCharts.profitClient = new Chart($('chartProfitClient').getContext('2d'), {
+    type:'bar',
+    data:{ labels: profitLabels.length?profitLabels:['Sin datos aún'], datasets:[{ label:'Ganancia neta', data: profitValues.length?profitValues:[0], backgroundColor: CHART_COLORS.ink, borderRadius:3 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ beginAtZero:true, grid:{ color: CHART_COLORS.line }, ticks:{ color: CHART_COLORS.inkSoft, font:{size:10} } },
+        y:{ grid:{ display:false }, ticks:{ color: CHART_COLORS.inkSoft, font:{size:10} } }
+      }
+    }
   });
 }
 
@@ -3061,8 +3113,8 @@ async function exportDashboardPDF(){
     y += 28;
 
     // Gráficos: se toman directamente de los canvas de Chart.js ya dibujados en pantalla
-    const chartIds = ['chartSales','chartQuotesVsBilled','chartTopClients','chartStatus'];
-    const chartTitles = ['Ventas mensuales (pagado)','Cotizado vs. facturado','Top clientes','Estado de cuentas de cobro'];
+    const chartIds = ['chartSales','chartQuotesVsBilled','chartTopClients','chartStatus','chartProfitMonth','chartProfitClient'];
+    const chartTitles = ['Ventas mensuales (pagado)','Cotizado vs. facturado','Top clientes','Estado de cuentas de cobro','Ganancia neta por mes','Ganancia neta por cliente'];
     const chartW = (pageWidth - margin*2 - 6) / 2;
     const chartH = chartW * 0.62;
 
@@ -3639,6 +3691,7 @@ function quoteStatusInfo(q){
   if(q.docType === 'cuenta'){
     return q.paid ? {label:'Pagado', cls:'status-accepted'} : {label:'Pendiente', cls:'status-pending'};
   }
+  if(q.rejected) return {label:'Rechazada', cls:'status-rejected'};
   if(q.accepted) return {label:'Aceptada', cls:'status-accepted'};
   const today = new Date(); today.setHours(0,0,0,0);
   if(q.valid){
@@ -3698,7 +3751,7 @@ function renderHistory(){
       <div class="h-client">${escapeHtml(q.client && q.client.name || 'Sin nombre')}</div>
       <div class="h-meta">${q.date ? formatDisplayDate(q.date) : ''} · ${formatMoney(q.total)}</div>
       ${profitInfo.itemsWithCost > 0 ? `<div class="h-profit">💰 Ganancia estimada: ${formatMoney(profitInfo.profit)}${profitInfo.itemsWithCost < profitInfo.totalItems ? ` (${profitInfo.itemsWithCost}/${profitInfo.totalItems} ítems con costo registrado)` : ''}</div>` : ''}
-      ${status ? `<button class="status-badge ${status.cls}" type="button">${status.label}</button>` : ''}
+      ${status ? `<button class="status-badge ${status.cls}" type="button" title="${q.docType==='cuenta' ? 'Toca para cambiar entre Pagado/Pendiente' : 'Toca para rotar entre Aceptada / Rechazada / automático'}">${status.label}</button>` : ''}
     </div>
   `;
   }).join('');
@@ -3721,21 +3774,27 @@ function renderHistory(){
         e.stopPropagation();
         const q = quotesCache.find(x=>x.id===el.dataset.id);
         if(q && q.docType === 'cuenta') togglePaidStatus(el.dataset.id);
-        else toggleQuoteAccepted(el.dataset.id);
+        else cycleQuoteStatus(el.dataset.id);
       });
     }
   });
 }
 
-async function toggleQuoteAccepted(id){
+async function cycleQuoteStatus(id){
   const q = quotesCache.find(x=>x.id===id);
   if(!q) return;
-  q.accepted = !q.accepted;
+  const prevAccepted = q.accepted, prevRejected = q.rejected;
+  // Ciclo: automático (Vigente/Vencida según fecha) → Aceptada → Rechazada → automático
+  if(q.accepted){ q.accepted = false; q.rejected = true; }
+  else if(q.rejected){ q.rejected = false; }
+  else { q.accepted = true; q.rejected = false; }
   renderHistory();
   try{
-    await storageSet(STORAGE_KEY, JSON.stringify(quotesCache), false);
+    const res = await storageSet(STORAGE_KEY, JSON.stringify(quotesCache), false);
+    if(!res) throw new Error('sin respuesta');
   }catch(e){
-    q.accepted = !q.accepted;
+    q.accepted = prevAccepted;
+    q.rejected = prevRejected;
     renderHistory();
     console.error('No se pudo actualizar el estado', e);
   }
