@@ -232,6 +232,12 @@
   .doc-table td:not(:first-child){padding-left:14px;}
   .doc-item-desc{display:flex;align-items:flex-start;gap:10px;}
   .doc-item-desc span{padding-top:1px;}
+  .doc-table td.doc-group-cell{padding:9px 10px;background:#F6F5F0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);}
+  .doc-group-row{break-after:avoid;}
+  .option-totals{margin-top:16px;padding-top:12px;border-top:1px dashed var(--line);break-inside:avoid;}
+  .option-totals-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:var(--brass);margin-bottom:4px;text-align:right;}
+  .item-opt-row{margin:5px 0 0;font-size:11.5px;color:var(--ink-soft);}
+  .item-opt-row select{font-size:12px;padding:3px 8px;border-radius:12px;border:1px solid var(--line);background:#fff;margin-left:6px;}
   .doc-item-thumb{width:42px;height:42px;object-fit:contain;background:#fff;border-radius:4px;border:1px solid var(--line);flex-shrink:0;}
   .doc-table .cell-amount{font-family:'IBM Plex Mono',monospace;text-align:right;}
   .doc-empty-row td{color:var(--ink-soft);font-style:italic;font-size:12.5px;}
@@ -652,6 +658,7 @@
           <span>Descripción</span><span>Cant.</span><span>Precio</span><span>Valor</span><span></span><span></span>
         </div>
         <div id="itemsList" class="items-list"></div>
+        <p id="optionsHint" class="field-hint" style="display:block;margin-top:10px;">💡 ¿Quieres ofrecer varias alternativas al cliente en una sola cotización? En cada ítem elige <strong>"Aplica a"</strong>: deja "Todas las opciones" para lo que va siempre (ej. mano de obra) y elige "Solo Opción 1", "Solo Opción 2"... para lo que cambia. El documento mostrará cada opción con su propio total.</p>
       </details>
 
       <details class="settings-block" id="taxBlock">
@@ -1131,6 +1138,10 @@ function renderItems(){
         <button class="img-toggle${imgOpen?' active':''}${i.image?' has-image':''}" title="Agregar imagen del producto" type="button">🖼️</button>
         <button class="item-remove" title="Eliminar" type="button">×</button>
       </div>
+      ${docType==='cotizacion' ? `<div class="item-opt-row"><label>Aplica a <select class="it-opt">
+        <option value=""${!i.option?' selected':''}>Todas las opciones</option>
+        ${[1,2,3,4].map(n=>`<option value="${n}"${String(i.option)===String(n)?' selected':''}>Solo Opción ${n}</option>`).join('')}
+      </select></label></div>` : ''}
       <div class="item-calc" style="display:${open?'grid':'none'}">
         <label>Costo proveedor<input class="ic-cost" type="number" min="0" value="${c.cost ?? ''}" placeholder="1000000"></label>
         <label>IVA prov. %<input class="ic-iva" type="number" min="0" value="${c.iva ?? 19}"></label>
@@ -1157,6 +1168,8 @@ function renderItems(){
     row.querySelector('.it-qty').addEventListener('input', e=>{ updateItem(id,'qty', Number(e.target.value)||0); });
     row.querySelector('.it-price').addEventListener('input', e=>{ updateItem(id,'price', Number(e.target.value)||0); });
     row.querySelector('.item-remove').addEventListener('click', ()=> removeItem(id));
+    const optSel = block.querySelector('.it-opt');
+    if(optSel) optSel.addEventListener('change', e=>{ updateItem(id,'option', e.target.value); });
     row.querySelector('.calc-toggle').addEventListener('click', ()=> toggleItemCalc(id));
     row.querySelector('.img-toggle').addEventListener('click', ()=> toggleItemImage(id));
 
@@ -1290,8 +1303,19 @@ function escapeHtml(s){
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function getTotals(){
-  const subtotal = items.reduce((s,i)=> s + (i.qty*i.price), 0);
+// ===== Opciones alternativas dentro de una misma cotización =====
+// Cada ítem puede aplicar a "todas las opciones" (option vacío) o solo a una
+// opción concreta ("1", "2"...). Solo hay opciones reales si existen 2 o más.
+function getOptionKeys(list){
+  const set = new Set((list||[]).filter(i=>i.option).map(i=>String(i.option)));
+  const keys = [...set].sort();
+  return keys.length >= 2 ? keys : [];
+}
+function itemsForOption(list, key){
+  return (list||[]).filter(i=>!i.option || String(i.option)===String(key));
+}
+function calcTotalsFor(list){
+  const subtotal = list.reduce((s,i)=> s + (i.qty*i.price), 0);
   const discountRate = Number($('discountRate').value)||0;
   const taxRate = Number($('taxRate').value)||0;
   const afterDiscount = subtotal - subtotal*discountRate/100;
@@ -1300,6 +1324,24 @@ function getTotals(){
   const advance = Number($('advanceAmount').value)||0;
   const balanceDue = total - advance;
   return {subtotal, discountRate, taxRate, tax, total, afterDiscount, advance, balanceDue};
+}
+function getTotals(){
+  const keys = docType==='cotizacion' ? getOptionKeys(items) : [];
+  if(keys.length === 0) return {...calcTotalsFor(items), scenarios:null};
+  const scenarios = keys.map(k => ({key:k, ...calcTotalsFor(itemsForOption(items,k))}));
+  return {...scenarios[0], scenarios};
+}
+
+// Al pasar a cuenta de cobro solo puede quedar UNA opción: se le pregunta al usuario cuál eligió el cliente.
+function resolveOptionsForInvoice(){
+  const keys = getOptionKeys(items);
+  if(keys.length < 2) return true;
+  const ans = prompt('Esta cotización tiene ' + keys.length + ' opciones (' + keys.map(k=>'Opción '+k).join(', ') + '). ¿Cuál eligió el cliente? Escribe solo el número:', keys[0]);
+  if(ans === null) return false;
+  const chosen = keys.includes(String(ans).trim()) ? String(ans).trim() : keys[0];
+  items = itemsForOption(items, chosen).map(i=>({...i, option:''}));
+  renderItems();
+  return true;
 }
 
 let selectedClientId = '';
@@ -2174,7 +2216,10 @@ function buildSummaryText(){
   const bizName = $('bizName').value.trim() || 'nosotros';
   const num = $('quoteNumber').value;
   const label = docType === 'cuenta' ? 'la cuenta de cobro' : 'la cotización';
-  return `Hola ${clientName}, te comparto ${label} ${num} de ${bizName} por un total de ${formatMoney(t.total)}. Cualquier duda, quedo atento(a).`;
+  const totalTxt = t.scenarios
+    ? `con ${t.scenarios.length} opciones a elegir (${t.scenarios.map(sc=>'Opción '+sc.key+': '+formatMoney(sc.total)).join(' / ')})`
+    : `por un total de ${formatMoney(t.total)}`;
+  return `Hola ${clientName}, te comparto ${label} ${num} de ${bizName} ${totalTxt}. Cualquier duda, quedo atento(a).`;
 }
 
 function sendWhatsApp(){
@@ -3201,7 +3246,7 @@ function renderPreview(){
   const docLabel = isAccount ? 'Cuenta de cobro' : 'Cotización';
   const isExtended = !isAccount && $('extendedProposal').checked;
 
-  const rowsHtml = items.length ? items.map(i=>`
+  const rowHtml = i => `
     <tr>
       <td>
         <div class="doc-item-desc">
@@ -3213,7 +3258,30 @@ function renderPreview(){
       <td class="cell-amount">${formatMoney(i.price)}</td>
       <td class="cell-amount">${formatMoney(i.qty*i.price)}</td>
     </tr>
-  `).join('') : `<tr class="doc-empty-row"><td colspan="4">Añade ítems para verlos aquí</td></tr>`;
+  `;
+  const groupRow = label => `<tr class="doc-group-row"><td class="doc-group-cell" colspan="4">${label}</td></tr>`;
+  const optionKeys = isAccount ? [] : getOptionKeys(items);
+  let rowsHtml;
+  if(!items.length){
+    rowsHtml = `<tr class="doc-empty-row"><td colspan="4">Añade ítems para verlos aquí</td></tr>`;
+  }else if(optionKeys.length){
+    const common = items.filter(i=>!i.option);
+    rowsHtml = (common.length ? groupRow('Incluido en todas las opciones') + common.map(rowHtml).join('') : '')
+      + optionKeys.map(k => groupRow('Opción '+k) + items.filter(i=>String(i.option)===k).map(rowHtml).join('')).join('');
+  }else{
+    rowsHtml = items.map(rowHtml).join('');
+  }
+  const optionTotalsHtml = t.scenarios ? t.scenarios.map(sc => `
+    <div class="totals option-totals">
+      <div class="option-totals-title">Opción ${sc.key}</div>
+      <div class="totals-row"><span>Subtotal</span><span>${formatMoney(sc.subtotal)}</span></div>
+      ${sc.discountRate>0 ? `<div class="totals-row"><span>Descuento (${sc.discountRate}%)</span><span>-${formatMoney(sc.subtotal - sc.afterDiscount)}</span></div>` : ''}
+      ${sc.taxRate>0 ? `<div class="totals-row"><span>IVA (${sc.taxRate}%)</span><span>${formatMoney(sc.tax)}</span></div>` : ''}
+      <div class="totals-row grand"><span>Total opción ${sc.key}</span><span>${formatMoney(sc.total)}</span></div>
+      ${sc.advance>0 ? `<div class="totals-row"><span>Anticipo recibido</span><span>-${formatMoney(sc.advance)}</span></div>
+      <div class="totals-row grand" style="color:var(--teal);"><span>Saldo pendiente</span><span>${formatMoney(sc.balanceDue)}</span></div>` : ''}
+    </div>
+  `).join('') : '';
 
   const headerHtml = isExtended ? `
     <div class="doc-header-row" style="display:flex;justify-content:flex-end;margin-bottom:18px;">
@@ -3358,14 +3426,14 @@ function renderPreview(){
       <thead><tr><th>Descripción</th><th>Cant.</th><th>Precio</th><th>Valor</th></tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
-    <div class="totals">
+    ${t.scenarios ? optionTotalsHtml : `<div class="totals">
       <div class="totals-row"><span>Subtotal</span><span>${formatMoney(t.subtotal)}</span></div>
       ${t.discountRate>0 ? `<div class="totals-row"><span>Descuento (${t.discountRate}%)</span><span>-${formatMoney(t.subtotal - t.afterDiscount)}</span></div>` : ''}
       ${t.taxRate>0 ? `<div class="totals-row"><span>IVA (${t.taxRate}%)</span><span>${formatMoney(t.tax)}</span></div>` : ''}
       <div class="totals-row grand"><span>Total</span><span>${formatMoney(t.total)}</span></div>
       ${t.advance>0 ? `<div class="totals-row"><span>Anticipo recibido</span><span>-${formatMoney(t.advance)}</span></div>
       <div class="totals-row grand" style="color:var(--teal);"><span>Saldo pendiente</span><span>${formatMoney(t.balanceDue)}</span></div>` : ''}
-    </div>
+    </div>`}
     ${proposalBottomHtml}
     ${!isExtended && isAccount ? `
     <div class="doc-declaration">Esta cuenta de cobro se asimila en todos sus efectos a una letra de cambio de conformidad con el Art. 774 del código del comercio. Autorizo que en caso de incumplimiento de esta obligación sea reportado a las centrales de riesgo, se cobrarán intereses por mora.</div>
@@ -3445,6 +3513,8 @@ function setDocType(type){
     $('proposalContentBlock').style.display = 'none';
   }
   $('convertRow').style.display = isAccount ? 'none' : '';
+  $('optionsHint').style.display = isAccount ? 'none' : 'block';
+  renderItems();
   renderPreview();
 }
 
@@ -3455,6 +3525,7 @@ function convertToInvoice(){
     return;
   }
   if(!confirm('¿Convertir esta cotización a una cuenta de cobro nueva? Se mantienen el cliente y los ítems, pero se crea un documento nuevo con su propio número — la cotización original no se modifica.')) return;
+  if(!resolveOptionsForInvoice()) return;
   pendingConversionSource = { number: $('quoteNumber').value, date: $('quoteDate').value };
   setDocType('cuenta');
   editingExistingNumber = null;
@@ -3676,8 +3747,11 @@ async function togglePaidStatus(id){
 
 function computeQuoteProfit(q){
   let profit = 0, itemsWithCost = 0;
-  const totalItems = (q.items||[]).length;
-  (q.items||[]).forEach(i=>{
+  // Con varias opciones se calcula sobre la primera (la misma que alimenta el total guardado).
+  const optKeys = getOptionKeys(q.items);
+  const profitList = optKeys.length ? itemsForOption(q.items, optKeys[0]) : (q.items||[]);
+  const totalItems = profitList.length;
+  profitList.forEach(i=>{
     if(i.calc && i.calc.cost){
       const costWithIva = i.calc.cost + (i.calc.cost*(i.calc.iva||0)/100);
       profit += ((Number(i.price)||0) - costWithIva) * (Number(i.qty)||0);
@@ -3749,7 +3823,7 @@ function renderHistory(){
         </div>
       </div>
       <div class="h-client">${escapeHtml(q.client && q.client.name || 'Sin nombre')}</div>
-      <div class="h-meta">${q.date ? formatDisplayDate(q.date) : ''} · ${formatMoney(q.total)}</div>
+      <div class="h-meta">${q.date ? formatDisplayDate(q.date) : ''} · ${q.optionTotals && q.optionTotals.length>1 ? q.optionTotals.map(o=>'Op.'+o.key+' '+formatMoney(o.total)).join(' · ') : formatMoney(q.total)}</div>
       ${profitInfo.itemsWithCost > 0 ? `<div class="h-profit">💰 Ganancia estimada: ${formatMoney(profitInfo.profit)}${profitInfo.itemsWithCost < profitInfo.totalItems ? ` (${profitInfo.itemsWithCost}/${profitInfo.totalItems} ítems con costo registrado)` : ''}</div>` : ''}
       ${status ? `<button class="status-badge ${status.cls}" type="button" title="${q.docType==='cuenta' ? 'Toca para cambiar entre Pagado/Pendiente' : 'Toca para rotar entre Aceptada / Rechazada / automático'}">${status.label}</button>` : ''}
     </div>
@@ -3989,6 +4063,7 @@ async function saveCurrentQuote(){
     paid: existing ? !!existing.paid : false,
     convertedFrom: pendingConversionSource || (existing ? existing.convertedFrom : null) || null,
     total: t.total,
+    optionTotals: t.scenarios ? t.scenarios.map(sc=>({key:sc.key, total:sc.total})) : null,
     savedAt: Date.now()
   };
   $('saveStatus').textContent = 'Guardando...';
@@ -4355,7 +4430,10 @@ $('maintDescPicker').addEventListener('change', e=>{
   if(d){ $('maintDesc').value = d.text; $('deleteMaintDescBtn').style.display=''; }
 });
 document.querySelectorAll('#docTypeToggle button').forEach(btn=>{
-  btn.addEventListener('click', ()=> setDocType(btn.dataset.type));
+  btn.addEventListener('click', ()=>{
+    if(btn.dataset.type==='cuenta' && docType==='cotizacion' && !resolveOptionsForInvoice()) return;
+    setDocType(btn.dataset.type);
+  });
 });
 ['bizName','bizId','bizEmail','bizPhone','bizAddress','bizCity','clientName','clientCompany','clientNit','clientAddress','clientEmail','clientPhone','quoteDate','quoteValid','notes','taxRate','discountRate','advanceAmount','payBank','payAccType','payAccNumber','payHolderName','payHolderId','proposalAlcance','proposalEntrega','proposalOtros','tplIntro','tplPresentacion','tplObligacionesOferente','tplObligacionesCliente','tplGarantia','tplNoIncluye','tplCierre']
   .forEach(id => $(id).addEventListener('input', renderPreview));
